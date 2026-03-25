@@ -8,19 +8,36 @@
 <body>
 
 <div class="botoes">
-    <button onclick="mostrarHoje()">Mostrar Apenas Hoje</button>
-    <button onclick="mostrarTodos()">Mostrar Todos</button>
+  <button class="btn-dia ativo" onclick="filtrarDia('TODOS', this)">Todos</button>
+  <button class="btn-dia" onclick="filtrarDia('SEG', this)">Seg</button>
+  <button class="btn-dia" onclick="filtrarDia('TER', this)">Ter</button>
+  <button class="btn-dia" onclick="filtrarDia('QUA', this)">Qua</button>
+  <button class="btn-dia" onclick="filtrarDia('QUI', this)">Qui</button>
+  <button class="btn-dia" onclick="filtrarDia('SEX', this)">Sex</button>
+  <button class="btn-dia" onclick="filtrarHoje(this)">Hoje</button>
 </div>
 
-<h2>🌞 Matutino</h2>
-<div class="container">
-    <table id="manha"></table>
+<div class="botoes">
+  <button class="btn-turno ativo" onclick="filtrarTurno('TODOS', this)">Todos</button>
+  <button class="btn-turno" onclick="filtrarTurno('manha', this)">Manhã</button>
+  <button class="btn-turno" onclick="filtrarTurno('tarde', this)">Tarde</button>
 </div>
 
-<h2>🌇 Vespertino</h2>
-<div class="container">
-    <table id="tarde"></table>
+<div id="secao-manha">
+  <h2>🌞 Matutino</h2>
+  <div class="container">
+      <table id="manha"></table>
+  </div>
 </div>
+
+<div id="secao-tarde">
+  <h2>🌇 Vespertino</h2>
+  <div class="container">
+      <table id="tarde"></table>
+  </div>
+</div>
+
+<div id="tooltip"></div>
 
 <script src="script.js"></script>
 </body>

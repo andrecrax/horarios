@@ -84,4 +84,23 @@ th{
 }
 
 
+td[data-prof] {
+    position: relative;
+    cursor: pointer;
+}
 
+td[data-prof]:hover::after {
+    content: attr(data-prof);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f172a;
+    color: #fff;
+    padding: 5px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 11px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    z-index: 10;
+}

@@ -70,7 +70,7 @@ const tardeDados = {
 ["ART","EDF","","","","","","EDF","POR","MAT","GEO","ART"],
 ["EDF","ART","","","","","EDF","","POR","GEO","MAT","ART"],
 ["","","","ART","EDF","","","","ART","GEO","EDF","MAT"],
-["","","EDF","","","","","","MAT","POR","ART","EDF"],
+["","","ART","","","","","","MAT","POR","ART","EDF"],
 ["","","","","","EDF","","","EDF","POR","ART","GEO"]
 ],
 "TER":[
@@ -83,9 +83,9 @@ const tardeDados = {
 "QUA":[
 ["ING","EDF","","","","","","","MAT","EDF","CIE","ING"],
 ["","ING","","","","","","","EDF","ART","CIE","ING"],
-["","","","","","","","","ENR","ART","MAT","EDF"],
+["","","EDF","","","","","","ENR","ART","MAT","EDF"],
 ["","","","","ING","EDF","","ART","GEO","MAT","ING","CIE"],
-["","","ART","EDF","","ING","EDF","ART","GEO","ENR","ING","CIE"]
+["","","","EDF","","ING","EDF","ART","GEO","ENR","ING","CIE"]
 ],
 "QUI":[
 ["","","","ING","","EDF","","","ING","POR","HIS","MAT"],
@@ -106,6 +106,7 @@ const tardeDados = {
 /* ================= FUNÇÃO GERAL ================= */
 
 function criarTabela(id, cabecalho, dados, horarios){
+const turnoKey = id === "manha" ? "M" : "T";
 const table = document.getElementById(id);
 let html = "<tr>";
 cabecalho.forEach(h=> html += `<th>${h}</th>`);
@@ -121,8 +122,12 @@ html += `<td rowspan="5">${dia}</td>`;
 
 html += `<td>${aula}<br><small>${horarios[i][0]}-${horarios[i][1]}</small></td>`;
 
-dados[dia][i].forEach(d=>{
-html += `<td class="${d}">${d}</td>`;
+dados[dia][i].forEach((d, ti)=>{
+const turma = cabecalho[ti+2];
+const chave = turnoKey+"_"+dia+"_"+i+"_"+turma;
+const prof = typeof professores !== "undefined" ? professores[chave] : null;
+const dataProfAttr = prof ? ` data-prof="${prof}"` : "";
+html += `<td class="${d}"${dataProfAttr}>${d}</td>`;
 });
 
 html += "</tr>";
@@ -131,6 +136,18 @@ html += "</tr>";
 
 table.innerHTML = html;
 }
+
+/* ================= PROFESSORES ================= */
+// Chave: "M_DIA_AULA_TURMA" (manhã) ou "T_DIA_AULA_TURMA" (tarde)
+// DIA: SEG TER QUA QUI SEX | AULA: 0=1º … 4=5º | TURMA: ex "1°A"
+// Exemplo: "M_SEG_0_1°A": "Prof. João"
+
+const professores = {
+ "M_SEG_0_1°A": "Kamila","M_SEG_1_1°A": "Kamila","M_SEG_2_1°A": "Robson"
+
+// --- VESPERTINO (T) ---
+// "T_SEG_0_1°B": "Prof. Exemplo",
+};
 
 /* 🔥 AGORA CRIA AS DUAS TABELAS */
 
@@ -179,3 +196,64 @@ document.querySelectorAll("tr").forEach(tr=>{
 tr.style.display="";
 });
 }
+
+/* ================= FILTROS ================= */
+
+let filtroAtivoDia = "TODOS";
+
+function filtrarDia(dia, btn){
+filtroAtivoDia = dia;
+document.querySelectorAll(".btn-dia").forEach(b => b.classList.remove("ativo"));
+btn.classList.add("ativo");
+aplicarFiltros();
+}
+
+function filtrarHoje(btn){
+const hoje = new Date().toLocaleDateString("pt-BR",{weekday:"short",timeZone:"America/Sao_Paulo"})
+.toUpperCase().substring(0,3);
+filtroAtivoDia = hoje;
+document.querySelectorAll(".btn-dia").forEach(b => b.classList.remove("ativo"));
+btn.classList.add("ativo");
+aplicarFiltros();
+}
+
+let filtroAtivoTurno = "TODOS";
+
+function filtrarTurno(turno, btn){
+filtroAtivoTurno = turno;
+document.querySelectorAll(".btn-turno").forEach(b => b.classList.remove("ativo"));
+btn.classList.add("ativo");
+aplicarFiltros();
+}
+
+function aplicarFiltros(){
+document.getElementById("secao-manha").style.display =
+(filtroAtivoTurno === "TODOS" || filtroAtivoTurno === "manha") ? "" : "none";
+document.getElementById("secao-tarde").style.display =
+(filtroAtivoTurno === "TODOS" || filtroAtivoTurno === "tarde") ? "" : "none";
+
+document.querySelectorAll("tr[class]").forEach(tr=>{
+if(!tr.classList.length) return;
+tr.style.display = (filtroAtivoDia === "TODOS" || tr.classList.contains(filtroAtivoDia)) ? "" : "none";
+});
+}
+
+/* ================= TOOLTIP PROFESSOR ================= */
+const tooltip = document.getElementById("tooltip");
+
+document.addEventListener("mousemove", e=>{
+tooltip.style.left = (e.clientX + 14) + "px";
+tooltip.style.top = (e.clientY - 10) + "px";
+});
+
+document.addEventListener("mouseover", e=>{
+const td = e.target.closest("td[data-prof]");
+if(!td || !td.dataset.prof) return;
+tooltip.textContent = "👤 " + td.dataset.prof;
+tooltip.classList.add("visivel");
+});
+
+document.addEventListener("mouseout", e=>{
+const td = e.target.closest("td[data-prof]");
+if(td) tooltip.classList.remove("visivel");
+});
