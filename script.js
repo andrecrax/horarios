@@ -143,13 +143,14 @@ table.innerHTML = html;
 // Exemplo: "M_SEG_0_1°A": "Prof. João"
 
 const professores = {
- "M_SEG_0_1°A": "Kamila","M_SEG_1_1°A": "Kamila","M_SEG_2_1°A": "Robson"
+ "M_SEG_0_1°A": "Kamila","M_SEG_1_1°A": "Kamila","M_SEG_4_3°A": "Kamila","M_SEG_2_1°A": "Robson","M_SEG_1_2°A": "Robson","M_SEG_0_4°A": "Robson","M_SEG_3_5°A": "Robson",
+ "M_TER_0_2°A": "Kamila","M_TER_1_2°A": "Kamila","M_TER_2_3°A": "Kamila","M_TER_2_5°A": "Robson","M_TER_3_1°A": "Robson","M_TER_4_4°A": "Robson",
+ "M_QUA_2_1°A":"Ionara","M_QUA_3_2°A":"Robson","M_QUA_4_2°A":"Ionara",
 
 // --- VESPERTINO (T) ---
 // "T_SEG_0_1°B": "Prof. Exemplo",
 };
 
-/* 🔥 AGORA CRIA AS DUAS TABELAS */
 
 criarTabela("manha",manhaCabecalho,manhaDados,horariosManha);
 criarTabela("tarde",tardeCabecalho,tardeDados,horariosTarde);
