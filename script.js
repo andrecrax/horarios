@@ -106,36 +106,53 @@ const tardeDados = {
 
 /* ================= FUNÇÃO GERAL ================= */
 
+/* ================= FUNÇÃO GERAL ================= */
+
 function criarTabela(id, cabecalho, dados, horarios){
-const turnoKey = id === "manha" ? "M" : "T";
-const table = document.getElementById(id);
-let html = "<tr>";
-cabecalho.forEach(h=> html += `<th>${h}</th>`);
-html += "</tr>";
+  const turnoKey = id === "manha" ? "M" : "T";
+  const table = document.getElementById(id);
+  let html = "<tr>";
+  
+  // Transforma os cabeçalhos das séries em botões clicáveis
+  cabecalho.forEach((h, idx) => {
+    if(idx >= 2) {
+      html += `<th data-turma="${h}" class="th-clicavel" title="Filtrar turma ${h}" onclick="toggleFiltroTurma('${h}')">${h}</th>`;
+    } else {
+      html += `<th>${h}</th>`;
+    }
+  });
+  html += "</tr>";
 
-dias.forEach(dia=>{
-aulas.forEach((aula,i)=>{
-html += `<tr class="${dia}" data-inicio="${horarios[i][0]}" data-fim="${horarios[i][1]}">`;
+  dias.forEach(dia=>{
+    aulas.forEach((aula,i)=>{
+      html += `<tr class="${dia}" data-inicio="${horarios[i][0]}" data-fim="${horarios[i][1]}">`;
 
-if(i===0){
-html += `<td rowspan="5">${dia}</td>`;
-}
+      if(i===0){
+        html += `<td rowspan="5">${dia}</td>`;
+      }
 
-html += `<td>${aula}<br><small>${horarios[i][0]}-${horarios[i][1]}</small></td>`;
+      html += `<td>${aula}<br><small>${horarios[i][0]}-${horarios[i][1]}</small></td>`;
 
-dados[dia][i].forEach((d, ti)=>{
-const turma = cabecalho[ti+2];
-const chave = turnoKey+"_"+dia+"_"+i+"_"+turma;
-const prof = typeof professores !== "undefined" ? professores[chave] : null;
-const dataProfAttr = prof ? ` data-prof="${prof}"` : "";
-html += `<td class="${d}"${dataProfAttr}>${d}</td>`;
-});
+      dados[dia][i].forEach((d, ti)=>{
+        const turma = cabecalho[ti+2];
+        const chave = turnoKey+"_"+dia+"_"+i+"_"+turma;
+        const prof = typeof professores !== "undefined" ? professores[chave] : null;
+        const dataProfAttr = prof ? ` data-prof="${prof}"` : "";
+        const profArg = prof ? `'${prof}'` : 'null';
+        
+        // Torna a célula clicável apenas se houver uma matéria preenchida
+        if (d !== "") {
+          html += `<td class="${d} celula-clicavel" ${dataProfAttr} data-turma="${turma}" data-materia="${d}" onclick="toggleFiltroMateria('${d}', ${profArg})">${d}</td>`;
+        } else {
+          html += `<td class="${d}" data-turma="${turma}"></td>`;
+        }
+      });
 
-html += "</tr>";
-});
-});
+      html += "</tr>";
+    });
+  });
 
-table.innerHTML = html;
+  table.innerHTML = html;
 }
 
 /* ================= PROFESSORES ================= */
@@ -640,3 +657,90 @@ document.addEventListener("mouseout", e=>{
 const td = e.target.closest("td[data-prof]");
 if(td) tooltip.classList.remove("visivel");
 });
+
+/* ================= FILTROS INTERATIVOS (TURMA / MATÉRIA) ================= */
+
+let turmaFiltrada = null;
+let materiaFiltrada = null;
+let profFiltrado = null;
+
+function toggleFiltroTurma(turma) {
+  // Ativa o filtro ou desativa se clicar na mesma turma
+  turmaFiltrada = (turmaFiltrada === turma) ? null : turma;
+  aplicarFiltroCelulas();
+}
+
+function toggleFiltroMateria(materia, prof) {
+  // Ativa o filtro ou desativa se clicar no mesmo par matéria+prof
+  if (materiaFiltrada === materia && profFiltrado === prof) {
+    materiaFiltrada = null;
+    profFiltrado = null;
+  } else {
+    materiaFiltrada = materia;
+    profFiltrado = prof;
+  }
+  aplicarFiltroCelulas();
+}
+
+function aplicarFiltroCelulas() {
+  const tabelas = document.querySelectorAll("table");
+  
+  // 1. Aplica o filtro de Turma (Esconde/Mostra as colunas inteiras)
+  document.querySelectorAll("th[data-turma], td[data-turma]").forEach(el => {
+    if (turmaFiltrada) {
+      el.style.display = (el.dataset.turma === turmaFiltrada) ? "" : "none";
+    } else {
+      el.style.display = "";
+    }
+  });
+
+  // Ajusta a largura da tabela para não ficar esticada quando filtrar apenas 1 turma
+  tabelas.forEach(t => {
+      t.style.minWidth = turmaFiltrada ? "auto" : "1400px";
+  });
+
+  // 2. Aplica o filtro de Matéria e Professor (Dá o efeito de opacidade)
+  document.querySelectorAll("td[data-materia]").forEach(el => {
+    el.classList.remove("inativo"); // Reseta o estado
+    
+    if (materiaFiltrada) {
+      const celulaProf = el.dataset.prof || null;
+      // Checa se a matéria e o professor da célula batem exatamente com o clique
+      if (el.dataset.materia === materiaFiltrada && celulaProf === profFiltrado) {
+        el.classList.remove("inativo");
+      } else {
+        el.classList.add("inativo");
+      }
+    }
+  });
+  
+  atualizarAvisoFiltro();
+}
+
+function atualizarAvisoFiltro() {
+  let aviso = document.getElementById("aviso-filtros");
+  
+  // Cria o elemento de aviso se ele não existir
+  if(!aviso) {
+    aviso = document.createElement("div");
+    aviso.id = "aviso-filtros";
+    aviso.className = "filtro-ativo-aviso";
+    
+    // Insere o aviso logo após os botões de turno (segundo conjunto de .botoes)
+    const botoesTurno = document.querySelectorAll(".botoes")[1];
+    botoesTurno.parentNode.insertBefore(aviso, botoesTurno.nextSibling);
+  }
+  
+  let textos = [];
+  if (turmaFiltrada) textos.push(`Série: ${turmaFiltrada}`);
+  if (materiaFiltrada) {
+      const nomeProf = profFiltrado ? profFiltrado : 'Sem Professor';
+      textos.push(`Disciplina: ${materiaFiltrada} (${nomeProf})`);
+  }
+  
+  if (textos.length > 0) {
+    aviso.innerHTML = `Filtros Ativos: <strong>${textos.join(" | ")}</strong> <br><small>(Clique novamente no item para remover o filtro)</small>`;
+  } else {
+    aviso.innerHTML = "";
+  }
+}

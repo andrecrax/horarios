@@ -104,3 +104,42 @@ td[data-prof]:hover::after {
     box-shadow: 0 0 5px rgba(0,0,0,0.5);
     z-index: 10;
 }
+
+/* ================= INTERATIVIDADE (CLIQUES) ================= */
+
+.th-clicavel {
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+}
+
+.th-clicavel:hover {
+    background: #38bdf8;
+    color: white;
+}
+
+.celula-clicavel {
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+}
+
+.celula-clicavel:hover {
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+/* Classe aplicada via JavaScript nas disciplinas que não correspondem ao filtro */
+.inativo {
+    opacity: 0.15;
+    filter: grayscale(100%);
+    pointer-events: none; /* Impede que o tooltip apareça nos itens apagados */
+}
+
+/* Mensagem de alerta mostrando quais filtros estão aplicados */
+.filtro-ativo-aviso {
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #38bdf8;
+    min-height: 20px;
+}
